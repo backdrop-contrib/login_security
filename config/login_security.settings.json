@@ -1,0 +1,11 @@
+{
+  "login_security_activity_threshold": 0,
+  "login_security_host_wrong_count": 0,
+  "login_security_host_wrong_count_hard": 0,
+  "login_security_login_activity_email_user": "",
+  "login_security_notice_attempts_available": 0,
+  "login_security_threshold_notified": "",
+  "login_security_track_time": 1,
+  "login_security_user_blocked_email_user": "",
+  "login_security_user_wrong_count": 0
+}
