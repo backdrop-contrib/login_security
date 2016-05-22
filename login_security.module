@@ -19,9 +19,10 @@ function login_security_config_info() {
 
 /**
  * Implements hook_cron().
+ *
+ * Remove expired events.
  */
 function login_security_cron() {
-  // Remove expired events.
   _login_security_remove_events();
 }
 
@@ -48,7 +49,7 @@ function login_security_menu() {
  * Implements hook_user_login().
  */
 function login_security_user_login(&$edit, $account) {
-  _login_security_remove_events($account->name, ip_address());
+  _login_security_remove_events($account->name;
 }
 
 /**
@@ -73,7 +74,7 @@ function login_security_form_alter(&$form, &$form_state, $form_id) {
       // Put login_security first or the capture of the previous login
       // timestamp won't work and core's validation will update to the current
       // login instance before login_security can read the old timestamp.
-      $validate = array('login_security_soft_block_validate', 'login_security_set_login_timestamp');
+      $validate = array('login_security_set_login_timestamp');
 
       if (isset($form['#validate']) && is_array($form['#validate'])) {
         $form['#validate'] = array_merge($validate, $form['#validate']);
@@ -96,7 +97,7 @@ function login_security_form_alter(&$form, &$form_state, $form_id) {
  */
 function login_security_set_login_timestamp($form, &$form_state) {
   // Save entry in security log, Username and IP Address.
-  _login_security_add_event($form_state['values']['name'], ip_address());
+  _login_security_add_event($form_state['values']['name']);
 }
 
 /**
@@ -119,21 +120,6 @@ function _login_security_access_timestamp($access = NULL) {
     $account_access = $access;
   }
   return $account_access;
-}
-
-/**
- * Temporarily deny validation to users with excess invalid login attempts.
- *
- * @url http://backdrop.org/node/493164
- */
-function login_security_soft_block_validate($form, &$form_state) {
-  $variables = _login_security_get_variables_by_name($form_state['values']['name']);
-  // Check for host login attempts: Soft.
-  if ($variables['@soft_block_attempts'] >= 1) {
-    if ($variables['@ip_current_count'] >= $variables['@soft_block_attempts']) {
-      form_set_error('submit', t("This host is not allowed to log in to @site. Please contact your site administrator.", $variables));
-    }
-  }
 }
 
 /**
@@ -160,37 +146,6 @@ function login_security_validate($form, &$form_state) {
   // activity.
   // Only process if configured threshold > 1.
   // see: http://backdrop.org/node/583092.
-  if ($variables['@activity_threshold']) {
-    // Check if threshold has been reached.
-    if ($variables['@tracking_current_count'] > $variables['@activity_threshold']) {
-      // Check if admin has been already alerted.
-      if (!config_get('login_security.settings', 'login_security_threshold_notified')) {
-        // Mark alert status as notified and send the email.
-        watchdog('login_security', 'Ongoing attack detected: Suspicious activity detected in login form submissions. Too many invalid login attempts threshold reached: currently @tracking_current_count events are tracked, and threshold is configured for @activity_threshold attempts.', $variables, WATCHDOG_WARNING);
-        config_set('login_security.settings', 'login_security_threshold_notified', TRUE);
-        // Submit email only if required.
-        $login_activity_email_user = config_get('login_security.settings', 'login_security_login_activity_email_user');
-        if ($login_activity_email_user !== '') {
-          $from = config_get('login_security.settings', 'site_mail');
-          $admin_mail = db_query_range("SELECT mail FROM {users} WHERE name = :name", 0, 1, array(':name' => $login_activity_email_user))->fetchField();
-          $mail = backdrop_mail('login_security', 'login_activity_notify', $admin_mail, language_default(), $variables, $from, TRUE);
-        }
-      }
-    }
-    elseif ((config_get('login_security.settings', 'login_security_threshold_notified')) && ($variables['@tracking_current_count'] < ($variables['@activity_threshold'] / 3))) {
-      // Reset alert if currently tracked events is < threshold / 3.
-      watchdog('login_security', 'Suspicious activity in login form submissions is no longer detected: currently @tracking_current_count events are being tracked, and threshold is configured for @activity_threshold maximum allowed attempts).', $variables, WATCHDOG_NOTICE);
-      config_set('login_security.settings', 'login_security_threshold_notified', FALSE);
-    }
-  }
-
-  // Check for host login attempts: Hard.
-  if ($variables['@hard_block_attempts'] >= 1) {
-    if ($variables['@ip_current_count'] >= $variables['@hard_block_attempts']) {
-      // Block the host ip_address().
-      login_user_block_ip($variables);
-    }
-  }
 
   // Check for user login attempts.
   if ($variables['@user_block_attempts'] >= 1) {
@@ -221,7 +176,7 @@ function login_security_validate($form, &$form_state) {
 
         // Allow other module to change the flag, or even the message displayed,
         // with a custom logic.
-        backdrop_alter('login_security_display_block_attempts', );
+        backdrop_alter('login_security_display_block_attempts');
 
         $message = array(
           'message' => $message_raw,
@@ -242,28 +197,17 @@ function login_security_validate($form, &$form_state) {
  *
  * @param string $name
  *   If specified, events for this user name will be removed.
- *
- * @param string $host
- *   If specified, IP Address of the name-ip pair to be removed.
  */
-function _login_security_remove_events($name = NULL, $host = NULL) {
+function _login_security_remove_events($name = NULL) {
   // Remove selected events.
   if (!empty($name)) {
-    if (!empty($host)) {
-      $result = db_delete('login_security_track')
-        ->condition('name', $name)
-        ->condition('host', $host)
-        ->execute();
-    }
-    else {
-      $result = db_delete('login_security_track')
-        ->condition('name', $name)
-        ->execute();
-    }
+    $result = db_delete('login_security_track')
+      ->condition('name', $name)
+      ->execute();
   }
   else {
     // Calculate protection time window and remove expired events.
-    $time = REQUEST_TIME - (config_get('login_security.settings', 'login_security_track_time') * 3600);
+    $time = REQUEST_TIME - (config_get('login_security.settings', 'login_security_track_time') * 60);
     _login_security_remove_all_events($time);
   }
 }
@@ -290,34 +234,15 @@ function _login_security_remove_all_events($time = NULL) {
  *
  * @param string $name
  *   user name to be tracked.
- *
- * @param string $ip
- *   IP Address of the pair.
  */
-function _login_security_add_event($name, $ip) {
-  // Each attempt is kept for future minning of advanced bruteforcing like
-  // multiple IP or X-Forwarded-for usage and automated track data cleanup.
+function _login_security_add_event($name) {
+  // Each attempt is kept for future mining of advanced bruteforcing like
+  // multiple IP or X-Forwarded-For usage and automated track data cleanup.
   $event = new stdClass();
   $event->host = $ip;
   $event->name = $name;
   $event->timestamp = REQUEST_TIME;
   backdrop_write_record('login_security_track', $event);
-}
-
-/**
- * Create a Deny entry for the IP address.
- *
- * If IP address is not especified then block current IP.
- */
-function login_user_block_ip($variables) {
-  // There is no need to check if the host has been banned, we can't get here
-  // twice.
-  $block = new stdClass();
-  $block->ip = $variables['@ip'];
-  backdrop_write_record('blocked_ips', $block);
-  watchdog('login_security', 'Banned IP address @ip due to security configuration.', $variables, WATCHDOG_NOTICE, l(t('view/delete blocked IPs'), "admin/config/people/ip-blocking"));
-  // Using form_set_error because it may disrupt current form submission.
-  form_set_error('void', t("The IP address @ip is banned at @site, and will not be able to access any of its content from now on. Please contact the site administrator.", $variables));
 }
 
 /**
@@ -379,8 +304,6 @@ function _login_security_get_variables_by_name($name) {
     '@site' => config_get('login_security.settings', 'site_name'),
     '@uri' => $base_url,
     '@edit_uri' => url('user/' . $account->uid . '/edit', array('absolute' => TRUE)),
-    '@hard_block_attempts' => config_get('login_security.settings', 'login_security_host_wrong_count_hard'),
-    '@soft_block_attempts' => config_get('login_security.settings', 'login_security_host_wrong_count'),
     '@user_block_attempts' => config_get('login_security.settings', 'login_security_user_wrong_count'),
     '@user_ip_current_count' => db_select('login_security_track', 'lst')
     ->fields('lst', array('id'))

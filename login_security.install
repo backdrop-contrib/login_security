@@ -10,19 +10,12 @@
  */
 function login_security_schema() {
   $schema['login_security_track'] = array(
-    'description' => 'Keeps track of failed login attempts, as a pair of the IP address and user name.',
+    'description' => 'Keeps track of failed login attempts by user name.',
     'fields' => array(
       'id' => array(
         'type' => 'serial',
         'not null' => TRUE,
         'description' => "ID of each login event.",
-      ),
-      'host' => array(
-        'type' => 'varchar',
-        'length' => 39,
-        'not null' => TRUE,
-        'default' => '',
-        'description' => "The IP address of the request.",
       ),
       'name' => array(
         'type' => 'varchar',
@@ -40,7 +33,6 @@ function login_security_schema() {
     ),
     'indexes' => array(
       'name' => array('name'),
-      'host' => array('host'),
       'timestamp' => array('timestamp'),
     ),
     'primary key' => array('id'),
