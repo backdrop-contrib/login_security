@@ -49,7 +49,7 @@ function login_security_menu() {
  * Implements hook_user_login().
  */
 function login_security_user_login(&$edit, $account) {
-  _login_security_remove_events($account->name;
+  _login_security_remove_events($account->name);
 }
 
 /**
@@ -230,7 +230,7 @@ function _login_security_remove_all_events($time = NULL) {
 }
 
 /**
- * Save the login attempt in the tracking database: user name nd ip address.
+ * Save the login attempt in the tracking database for the username.
  *
  * @param string $name
  *   user name to be tracked.
@@ -239,7 +239,6 @@ function _login_security_add_event($name) {
   // Each attempt is kept for future mining of advanced bruteforcing like
   // multiple IP or X-Forwarded-For usage and automated track data cleanup.
   $event = new stdClass();
-  $event->host = $ip;
   $event->name = $name;
   $event->timestamp = REQUEST_TIME;
   backdrop_write_record('login_security_track', $event);
@@ -289,7 +288,7 @@ function login_user_block_user_name($variables) {
  */
 function _login_security_get_variables_by_name($name) {
   $account = user_load_by_name($name);
-  // https://backdrop.org/node/1744704
+  // https://drupal.org/node/1744704
   if (empty($account)) {
     $account = user_load(0);
   }
@@ -305,26 +304,12 @@ function _login_security_get_variables_by_name($name) {
     '@uri' => $base_url,
     '@edit_uri' => url('user/' . $account->uid . '/edit', array('absolute' => TRUE)),
     '@user_block_attempts' => config_get('login_security.settings', 'login_security_user_wrong_count'),
-    '@user_ip_current_count' => db_select('login_security_track', 'lst')
-    ->fields('lst', array('id'))
-    ->condition('name', $name)
-    ->condition('host', $ipaddress)
-    ->countQuery()
-    ->execute()
-    ->fetchField(),
-    '@ip_current_count' => db_select('login_security_track', 'lst')
-    ->fields('lst', array('id'))
-    ->condition('host', $ipaddress)
-    ->countQuery()
-    ->execute()
-    ->fetchField(),
     '@user_current_count' => db_select('login_security_track', 'lst')
     ->fields('lst', array('id'))
     ->condition('name', $name)
     ->countQuery()
     ->execute()
     ->fetchField(),
-    '@tracking_time' => config_get('login_security.settings', 'login_security_track_time'),
     '@tracking_current_count' => db_select('login_security_track', 'lst')
     ->fields('lst', array('id'))
     ->countQuery()

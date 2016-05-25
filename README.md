@@ -11,27 +11,7 @@ block login form).
 
 These are the features included:
 
-Ongoing attack detection
-------------------------
-System will detect if a password guessing or bruteforce attack is being performed
-against the Backdrop login form. Using a threshold value, you may instruct the
-module to alert (using a watchdog message, and optionally send an email) the
-admin user when the number of invalid login attempts reaches the threshold value.
-
-Soft Protections
-----------------
-Soft protections don't disrupt site navigation, but alter the way a login
-operation is performed.
-
-Currently, the login form submission can be soft-protected with these two
-options:
-
- - Invalidate login form submission: when the soft-block protection flag is
-   enabled the login form is never submitted, and any new login request will
-   fail, but the host could still access the site.
-
-
-Hard Protections
+User Protections
 ----------------
 When there is evidence of hard account guessing operations, or when you need to
 block users because of leak password guessing attempts, Hard protections may
@@ -40,10 +20,6 @@ help defeating the system.
  - Block account: it's common to block an account after a number of failed login
    attempts. Once this count is completed, the account can be blocked and user
    and admin are advised about this.
-
- - Block IP address: on a number of failed attempts, a host may be added to the
-   access control list. This action will leave the host completely banned from
-   the site.
 
 
 Track time: Protection time window
@@ -67,12 +43,10 @@ are temporary, and will expire in the time defined by the 'track time' or
 protection time window.
 
 Hard protections are permanent, and an administrator should unblock or un-ban an
-account or a host.
+account.
 
 A blocked account could be unblocked through the administration section:
   /admin/user/user
-A banned host could be un-banned through the Access rules section:
-  /admin/user/rules
 
 
 Installation
@@ -104,22 +78,6 @@ Basic options
    attempting to, the user will be blocked. To remove the blocking of the user,
    you will have to go to: Administer -> User Management -> Users
 
- - Maximum number of login failures before soft blocking a host: After that
-   number of attempts to login from that IP address, no matter the username
-   used, the host will not be allowed to submit the login form again, but the
-   content of the site is still accessible for that IP address. Login attempts
-   will start to clear of counts after the "Track Time" time window.
-
- - Maximum number of login failures before blocking a host: As the soft block
-   protection does, but this time the IP address will be banned from the site,
-   included in the access list as a deny rule. To remove the IP from this ban,
-   you will have to go to:  Administer -> User Management -> Access Rules.
-
- - Maximum number of login failures to detect ongoing attack: This value is the
-   threshold used to detect a password guess attack. The limit means that during
-   the "track time" period, this number of invalid logins indicates a password
-   guessing attack.
-
 Notifications
 
  The module also provides some notifications for the users to understand what is
@@ -147,13 +105,8 @@ the strings could be personalized using the following placeholders:
     %site                  :  The configured site's name
     %uri                   :  The base url of the Backdrop site
     %edit_uri              :  Direct link to the user (name entered) edit page
-    %hard_block_attempts   :  Configured attempts before hard blocking the IP
-    %soft_block_attempts   :  Configured attempts before soft blocking the IP
     %user_block_attempts   :  Configured login attempts before blocking the user
-    %user_ip_current_count :  The total attempts for the name by this IP address
-    %ip_current_count      :  The total login attempts by this IP address
     %user_current_count    :  The total login attempts for this name
-    %tracking_time         :  The tracking time: in hours
     %tracking_current_count:  Total tracked events
     %activity_threshold    :  Value of attempts to detect ongoing attack.
 

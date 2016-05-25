@@ -9,7 +9,7 @@
  * Test login_security interface.
  */
 class LoginSecurityInterfaceTest extends BackdropWebTestCase {
-  // Ignoring Coder. See https://backdrop.org/node/1805550
+  // Ignoring Coder. See https://drupal.org/node/1805550
   // @ignore comment_comment_docblock_missing
   public static function getInfo() {
     return array(
@@ -19,7 +19,7 @@ class LoginSecurityInterfaceTest extends BackdropWebTestCase {
     );
   }
 
-  // Ignoring Coder. See https://backdrop.org/node/1805550
+  // Ignoring Coder. See https://drupal.org/node/1805550
   // @ignore comment_comment_docblock_missing
   public function setUp() {
     parent::setUp('login_security');
@@ -56,7 +56,7 @@ class LoginSecurityInterfaceTest extends BackdropWebTestCase {
  * Test login_security user blocking.
  */
 class LoginSecurityUserBlockingTest extends BackdropWebTestCase {
-  // Ignoring Coder. See https://backdrop.org/node/1805550
+  // Ignoring Coder. See https://drupal.org/node/1805550
   // @ignore comment_comment_docblock_missing
   public static function getInfo() {
     return array(
@@ -66,7 +66,7 @@ class LoginSecurityUserBlockingTest extends BackdropWebTestCase {
     );
   }
 
-  // Ignoring Coder. See https://backdrop.org/node/1805550
+  // Ignoring Coder. See https://drupal.org/node/1805550
   // @ignore comment_comment_docblock_missing
   public function setUp() {
     parent::setUp('login_security');
