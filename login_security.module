@@ -145,7 +145,7 @@ function login_security_validate($form, &$form_state) {
   // First, check if administrator should be notified of unexpected login
   // activity.
   // Only process if configured threshold > 1.
-  // see: http://backdrop.org/node/583092.
+  // see: http://drupal.org/node/583092.
 
   // Check for user login attempts.
   if ($variables['@user_block_attempts'] >= 1) {
@@ -224,7 +224,7 @@ function _login_security_remove_all_events($time = NULL) {
   if (empty($time)) {
     $time = REQUEST_TIME;
   }
-  $result = db_delete('login_security_track')
+  db_delete('login_security_track')
     ->condition('timestamp', $time, '<')
     ->execute();
 }
@@ -282,7 +282,6 @@ function login_user_block_user_name($variables) {
   }
 }
 
-
 /**
  * Helper function to get the variable array for the messages.
  */
@@ -304,14 +303,14 @@ function _login_security_get_variables_by_name($name) {
     '@uri' => $base_url,
     '@edit_uri' => url('user/' . $account->uid . '/edit', array('absolute' => TRUE)),
     '@user_block_attempts' => config_get('login_security.settings', 'login_security_user_wrong_count'),
-    '@user_current_count' => db_select('login_security_track', 'lst')
-    ->fields('lst', array('id'))
+    '@user_current_count' => db_select('login_security_track', 'n')
+    ->fields('n')
     ->condition('name', $name)
     ->countQuery()
     ->execute()
     ->fetchField(),
-    '@tracking_current_count' => db_select('login_security_track', 'lst')
-    ->fields('lst', array('id'))
+    '@tracking_current_count' => db_select('login_security_track', 'n')
+    ->fields('n')
     ->countQuery()
     ->execute()
     ->fetchField(),
@@ -324,15 +323,8 @@ function _login_security_get_variables_by_name($name) {
  * Implements hook_mail().
  */
 function login_security_mail($key, &$message, $variables) {
-  switch ($key) {
-    case 'block_user_notify':
-      $message['subject'] = t("Security action: The user @username has been blocked", $variables);
-      $message['body'][] = t("The user @username (@edit_uri) has been blocked at @site due to the amount of failed login attempts. Please check the logs for more information.", $variables);
-      break;
-
-    case 'login_activity_notify':
-      $message['subject'] = t("Security information: Unexpected login activity has been detected at @site.", $variables);
-      $message['body'][] = t("The configured threshold of @activity_threshold logins has been reached with a total of @tracking_current_count invalid login attempts. You should review your log information about login attempts at @site.", $variables);
-      break;
+  if ($key == 'block_user_notify') {
+    $message['subject'] = t("Security action: The user @username has been blocked", $variables);
+    $message['body'][] = t("The user @username (@edit_uri) has been blocked at @site due to the amount of failed login attempts. Please check the logs for more information.", $variables);
   }
 }

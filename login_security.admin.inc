@@ -60,18 +60,19 @@ function login_security_admin_settings() {
     $form['login_messages']['login_security_login_activity_email_user']['#autocomplete_path'] = 'user/autocomplete';
   }
 
-  // Clean event tracking list.
-  $form['buttons']['login_security_clean_tracked_events'] = array(
-    '#type' => 'submit',
-    '#value' => t('Clear event tracking information'),
-    '#weight' => 20,
-    '#submit' => array('_login_security_clean_tracked_events'),
-  );
-
   $form['actions']['#type'] = 'actions';
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save configuration'),
+    '#submit' => array('login_security_admin_settings_submit'),
+  );
+
+  // Clean event tracking list.
+  $form['actions']['login_security_clean_tracked_events'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clear event tracking information'),
+    '#weight' => 20,
+    '#submit' => array('_login_security_clean_tracked_events'),
   );
 
   return $form;

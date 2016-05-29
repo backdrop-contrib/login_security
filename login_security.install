@@ -12,11 +12,6 @@ function login_security_schema() {
   $schema['login_security_track'] = array(
     'description' => 'Keeps track of failed login attempts by user name.',
     'fields' => array(
-      'id' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'description' => "ID of each login event.",
-      ),
       'name' => array(
         'type' => 'varchar',
         'length' => 64,
@@ -31,11 +26,7 @@ function login_security_schema() {
         'description' => "Timestamp of the event.",
       ),
     ),
-    'indexes' => array(
-      'name' => array('name'),
-      'timestamp' => array('timestamp'),
-    ),
-    'primary key' => array('id'),
+    'primary key' => array('name', 'timestamp'),
   );
 
   return $schema;
