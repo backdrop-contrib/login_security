@@ -11,8 +11,8 @@ my testing by features of the built-in flood control.
 
 In real-life use of this module with Drupal, I also found that frequently the
 core flood control features would engage before Login Security. Consider
-relying on flood control for your login security - I believe it obsoletes this
-module.
+relying on [flood control](https://github.com/backdrop-contrib/flood_control)
+for your login security - I believe it obsoletes this module.
 
 Flood Control Features
 ----------------------
