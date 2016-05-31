@@ -13,7 +13,7 @@ function login_security_admin_settings() {
 
   $form['login_security_track_time'] = array(
     '#type' => 'textfield',
-    '#title' => t('Track time'),
+    '#title' => t('Track time (minutes)'),
     '#default_value' => config_get('login_security.settings', 'login_security_track_time'),
     '#element_validate' => array('_login_security_valid_integer'),
     '#size' => 3,
@@ -22,7 +22,7 @@ function login_security_admin_settings() {
   );
   $form['login_security_user_wrong_count'] = array(
     '#type' => 'textfield',
-    '#title' => t('Maximum number of login failures before blocking a user'),
+    '#title' => t('Maximum number of login failures before limiting login attempts'),
     '#default_value' => config_get('login_security.settings', 'login_security_user_wrong_count'),
     '#element_validate' => array('_login_security_valid_integer'),
     '#size' => 3,
@@ -30,49 +30,17 @@ function login_security_admin_settings() {
     '#field_suffix' => t('Failed attempts'),
   );
 
-  $form['login_messages'] = array(
+  $form['clean_events']['clean_tracked_events'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Notifications'),
+    '#title' => t('Clear event tracking'),
+    '#description' => l('Delete all tracked events', 'login_security_clean_tracked_events'),
   );
-  $form['login_messages']['login_security_notice_attempts_available'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Notify the user about the number of remaining login attempts'),
-    '#default_value' => config_get('login_security.settings', 'login_security_notice_attempts_available'),
-    '#description' => t('Checking this option, the user is notified about the number of remaining login attempts before the account gets blocked. Security tip: If you enable this option, try to not disclose as much of your login policies as possible in the message shown on any failed login attempt.'),
-  );
-  $form['login_messages']['login_security_user_blocked_email_user'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Select who should get an email message when a user is blocked by this module'),
-    '#description' => t('No notification will be sent if the field is blank'),
-    '#default_value' => config_get('login_security.settings', 'login_security_user_blocked_email_user'),
-    '#element_validate' => array('_login_security_valid_user'),
-  );
-  $form['login_messages']['login_security_login_activity_email_user'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Select who should get an email message when an ongoing attack is detected'),
-    '#description' => t('No notification will be sent if the field is blank'),
-    '#default_value' => config_get('login_security.settings', 'login_security_login_activity_email_user'),
-    '#element_validate' => array('_login_security_valid_user'),
-  );
-
-  if (user_access('access user profiles')) {
-    $form['login_messages']['login_security_user_blocked_email_user']['#autocomplete_path'] = 'user/autocomplete';
-    $form['login_messages']['login_security_login_activity_email_user']['#autocomplete_path'] = 'user/autocomplete';
-  }
 
   $form['actions']['#type'] = 'actions';
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save configuration'),
     '#submit' => array('login_security_admin_settings_submit'),
-  );
-
-  // Clean event tracking list.
-  $form['actions']['login_security_clean_tracked_events'] = array(
-    '#type' => 'submit',
-    '#value' => t('Clear event tracking information'),
-    '#weight' => 20,
-    '#submit' => array('_login_security_clean_tracked_events'),
   );
 
   return $form;
@@ -85,10 +53,6 @@ function login_security_admin_settings_submit($form, &$form_state) {
   $config = config('login_security.settings');
   $config->set('login_security_track_time', $form_state['values']['login_security_track_time']);
   $config->set('login_security_user_wrong_count', $form_state['values']['login_security_user_wrong_count']);
-  $config->set('login_security_activity_threshold', $form_state['values']['login_security_activity_threshold']);
-  $config->set('login_security_notice_attempts_available', $form_state['values']['login_security_notice_attempts_available']);
-  $config->set('login_security_user_blocked_email_user', $form_state['values']['login_security_user_blocked_email_user']);
-  $config->set('login_security_login_activity_email_user', $form_state['values']['login_security_login_activity_email_user']);
   $config->save();
   watchdog('login_security', t('Login security configuration updated.'), array(), WATCHDOG_INFO, l(t('Configure'), 'admin/config/people/login_security'));
 }
@@ -104,25 +68,30 @@ function _login_security_valid_integer($element, &$form_state) {
 }
 
 /**
- * Verify that element is a valid username.
+ * Form builder to confirm deletion of all login events.
+ *
+ * @see login_security_admin_settings()
+ * @see confirm_form()
+ *
+ * @ingroup forms
  */
-function _login_security_valid_user($element, &$form_state) {
-  if ($element['#value'] !== '') {
-    $count = db_select('users', 'u')
-      ->condition('name', $element['#value'])
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-    if (intval($count) != 1) {
-      form_error($element, t('The @field field should be a valid username.', array('@field' => $element['#title'])));
-    }
-  }
+function login_security_clean_tracked_events($form, &$form_state) {
+  return confirm_form(
+    $form,
+    t('Are you sure you want to delete all tracked login events?'),
+    'admin/config/people/login_security',
+    t('This action cannot be undone.'),
+    t('Delete all events')
+  );
 }
 
 /**
- * Clean login_security_track table.
+ * Form submit handler; delete an URL redirect after confirmation.
+ *
+ * @see redirect_delete_form()
  */
-function _login_security_clean_tracked_events($form, &$form_state) {
-  backdrop_set_message(t('Login Security event track list is now empty.'));
+function login_security_clean_tracked_events_submit($form, &$form_state) {
   _login_security_remove_all_events();
+  backdrop_set_message(t('Login security event tracking list is now empty.'));
+  $form_state['redirect'] = 'admin/config/people/login_security';
 }

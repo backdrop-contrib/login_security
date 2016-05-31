@@ -2,16 +2,23 @@
 
 /**
  * @file
- * Login Security installation routines.
+ * Login security installation routines.
  */
 
 /**
  * Implements hook_schema().
  */
 function login_security_schema() {
-  $schema['login_security_track'] = array(
+  $schema['login_security'] = array(
     'description' => 'Keeps track of failed login attempts by user name.',
     'fields' => array(
+      'host' => array(
+        'type' => 'varchar',
+        'length' => 39,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => "The IP address of the request.",
+      ),
       'name' => array(
         'type' => 'varchar',
         'length' => 64,
@@ -26,8 +33,26 @@ function login_security_schema() {
         'description' => "Timestamp of the event.",
       ),
     ),
-    'primary key' => array('name', 'timestamp'),
+    'primary key' => array('host', 'name', 'timestamp'),
   );
 
   return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function login_security_install() {
+  // Help make sure the login validation happens before core's.
+  db_update('system')
+    ->fields(array('weight' => -1))
+    ->condition('name', 'login_security', '=')
+    ->execute();
+}
+
+/**
+ * Implements hook_update_last_removed().
+ */
+function login_security_update_last_removed() {
+  return 7001;
 }
