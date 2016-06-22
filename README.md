@@ -14,6 +14,11 @@ core flood control features would engage before Login Security. Consider
 relying on [flood control](https://github.com/backdrop-contrib/flood_control)
 for your login security - I believe it obsoletes this module.
 
+For the Login Security module functionality which suppressed login errors,
+see the
+[Disable login errors](https://github.com/backdrop-contrib/disable_login_errors)
+module, which ports the same functionality as a separate, smaller module.
+
 Flood Control Features
 ----------------------
 
