@@ -17,7 +17,9 @@ for your login security - I believe it obsoletes this module.
 For the Login Security module functionality which suppressed login errors,
 see the
 [Disable login errors](https://github.com/backdrop-contrib/disable_login_errors)
-module, which ports the same functionality as a separate, smaller module.
+module, which ports the same functionality as a separate, smaller module. It
+provides similar functionality to the
+[Username Enumeration Prevention](https://www.drupal.org/project/username_enumeration_prevention) module in Drupal.
 
 To show users their previous login timestamp, see the
 [previous login](https://github.com/backdrop-contrib/previous_login) module.
