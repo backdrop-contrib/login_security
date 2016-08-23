@@ -19,6 +19,9 @@ see the
 [Disable login errors](https://github.com/backdrop-contrib/disable_login_errors)
 module, which ports the same functionality as a separate, smaller module.
 
+To show users their previous login timestamp, see the
+[previous login](https://github.com/backdrop-contrib/previous_login) module.
+
 Flood Control Features
 ----------------------
 
