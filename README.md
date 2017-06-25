@@ -35,7 +35,7 @@ an hour, regardless of the username submitted.
 Current "Maintainer"
 --------------------
 
-- David Norman (https://github.com/deekayen)
+- None
 
 
 Credits
